@@ -1,0 +1,21 @@
+{
+  "name": "addon-bench",
+  "version": "1.0.0",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "clangd": "node-gyp configure -- -f compile_commands_json && cp build/Release/compile_commands.json ./",
+    "build": "node-gyp rebuild"
+  },
+  "type": "module",
+  "author": "",
+  "license": "ISC",
+  "gypfile": true,
+  "description": "",
+  "dependencies": {
+    "node-addon-api": "^8.5.0",
+    "node-gyp": "^12.1.0"
+  }
+}
