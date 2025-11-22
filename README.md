@@ -1,0 +1,1 @@
+- `Analysis.md` has the basic info on each approach with names for each one tried. When we try a new one, we use this as the tag in the repo
