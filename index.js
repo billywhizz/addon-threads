@@ -1,10 +1,19 @@
 import { createRequire } from "node:module"
 
 const require = createRequire(import.meta.url)
-const { start, stop } = require('./build/Release/node-addon-api.node')
+const { start, stop } = require('./build/Debug/node-addon-api.node')
 
+let count = 0
 start(record => {
-  console.log(record)
+  count++;
+//  console.log(record)
 })
 
-setTimeout(stop, 5000)
+setTimeout(() => {
+  console.log("stopping")
+  console.log(count)
+  clearInterval(timer)
+  stop() 
+}, 5000)
+
+const timer = setInterval(() => console.log(count), 1000)

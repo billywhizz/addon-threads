@@ -2,8 +2,13 @@
 #include <node_api.h>
 #include <thread>
 
+struct workerThread {
+  std::thread thread;
+  bool running = true;
+};
+
 Napi::ThreadSafeFunction g_threadSafeFunction;
-std::vector<std::thread> workers;
+std::vector<workerThread*> workers;
 int32_t id = 0;
 
 struct LogRecord {
@@ -13,11 +18,13 @@ struct LogRecord {
 };
 
 void callback_from_thread () {
+/*
   napi_status acq = g_threadSafeFunction.Acquire();
   if (acq != napi_ok) {
     fprintf(stderr, "uhoh 1\n");
     return;
   };
+*/
   auto const record = new LogRecord();
   record->message = "hello";
   record->pid = getpid();
@@ -43,18 +50,25 @@ void Start(const Napi::CallbackInfo& info) {
   g_threadSafeFunction = Napi::ThreadSafeFunction::New(env, cb, "Foo", 0, 1);
   g_threadSafeFunction.Unref(env);
   for (int i = 0; i < 5; i++) {
-    workers.push_back(std::thread([]() {
-      for (int i = 0; i < 1000000; i++) {
+    struct workerThread* worker = new workerThread();
+    worker->thread = std::thread([worker]() {
+      while(1) {
         callback_from_thread();
+        if (!worker->running) break;
         usleep(20);
       }
-    }));
+    });
+    workers.push_back(worker);
   }
 }
 
 void Stop(const Napi::CallbackInfo& info) {
-  std::for_each(workers.begin(), workers.end(), [](std::thread &t) {
-      t.join();
+  std::for_each(workers.begin(), workers.end(), [](struct workerThread* worker) {
+    worker->running = false;
+  });
+  std::for_each(workers.begin(), workers.end(), [](struct workerThread* worker) {
+    worker->thread.join();
+    delete worker;
   });
 }
 

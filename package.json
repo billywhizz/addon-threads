@@ -7,7 +7,8 @@
   },
   "scripts": {
     "clangd": "node-gyp configure -- -f compile_commands_json && cp build/Release/compile_commands.json ./",
-    "build": "node-gyp rebuild"
+    "build": "node-gyp rebuild",
+    "build:debug": "node-gyp rebuild --debug"
   },
   "type": "module",
   "author": "",
