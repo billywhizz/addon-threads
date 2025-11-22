@@ -1,4 +1,4 @@
-## attempt one
+## assay_0001
 
 This implementation works for some time and eventually seems to deadlock, with no more output on the terminal.
 After some time it then crashes. This is the backtrace from the core dump.
