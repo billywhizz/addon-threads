@@ -18,13 +18,11 @@ struct LogRecord {
 };
 
 void callback_from_thread () {
-/*
   napi_status acq = g_threadSafeFunction.Acquire();
   if (acq != napi_ok) {
     fprintf(stderr, "uhoh 1\n");
     return;
   };
-*/
   auto const record = new LogRecord();
   record->message = "hello";
   record->pid = getpid();
@@ -70,6 +68,8 @@ void Stop(const Napi::CallbackInfo& info) {
     worker->thread.join();
     delete worker;
   });
+  g_threadSafeFunction.Abort();
+  g_threadSafeFunction = Napi::ThreadSafeFunction();
 }
 
 Napi::Object Init(Napi::Env env, Napi::Object exports) {
