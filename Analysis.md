@@ -74,3 +74,42 @@ Core file '/media/andrew/OCZ/source2023/just-js/addon-threads/core.270626' (x86_
     frame #31: 0x000073c502429e40 libc.so.6`__libc_start_main_impl(main=(node`main), argc=2, argv=0x00007fff26ac8a18, init=<unavailable>, fini=<unavailable>, rtld_fini=<unavailable>, stack_end=0x00007fff26ac8a08) at libc-start.c:392:3
     frame #32: 0x0000000000f8761e node`_start + 46
 ```
+
+
+```shell
+(lldb) target create "/home/andrew/.node/24/bin/node" --core "core.283659"
+Core file '/media/andrew/OCZ/source2023/just-js/addon-threads/core.283659' (x86_64) was loaded.
+(lldb) bt
+* thread #1, name = 'MainThread', stop reason = SIGSEGV: sent by tkill system call (sender pid=283659, uid=1000)
+  * frame #0: 0x00007a2f162a53fe libc.so.6`__GI___libc_free(mem=0x0570000000000000) at malloc.c:3368:7
+    frame #1: 0x00007a2f16291774 libc.so.6`__GI___nptl_free_tcb(pd=0x000000002a4f0462) at nptl_free_tcb.c:35:11
+    frame #2: 0x00007a2f16291758 libc.so.6`__GI___nptl_free_tcb(pd=0x000000002a4f0462) at nptl_free_tcb.c:24:1
+    frame #3: 0x00007a2f1629659c libc.so.6`__pthread_clockjoin_ex(threadid=709821538, thread_return=0x0000000000000000, clockid=0, abstime=0x0000000000000000, block=<unavailable>) at pthread_join_common.c:128:7
+    frame #4: 0x00007a2f166dc2c7 libstdc++.so.6`std::thread::join() + 23
+    frame #5: 0x00007a2f168487a3 node-addon-api.node`operator(__closure=0x00007ffecf9957bf, worker=0x000000002a4f23c0) at node-addon-api.cc:70:24
+    frame #6: 0x00007a2f168487f9 node-addon-api.node`std::for_each<__gnu_cxx::__normal_iterator<workerThread**, std::vector<workerThread*> >, Stop(const Napi::CallbackInfo&)::<lambda(workerThread*)> >(__first=__normal_iterator<workerThread**, std::vector<workerThread*, std::allocator<workerThread*> > > @ 0x00007ffecf9957c8, __last=__normal_iterator<workerThread**, std::vector<workerThread*, std::allocator<workerThread*> > > @ 0x00007ffecf9957c0, __f=(unnamed struct) @ 0x00007ffecf9957bf)) at stl_algo.h:3820:5
+    frame #7: 0x00007a2f168488a0 node-addon-api.node`Stop(info=0x00007ffecf995850) at node-addon-api.cc:69:16
+    frame #8: 0x00007a2f1684e58a node-addon-api.node`Napi::details::CallbackData<void (*)(Napi::CallbackInfo const&), void>::Wrapper(napi_env__*, napi_callback_info__*)::'lambda'()::operator()(__closure=0x00007ffecf9958f0) const at napi-inl.h:184:21
+    frame #9: 0x00007a2f1684f27a node-addon-api.node`napi_value__* Napi::details::WrapCallback<Napi::details::CallbackData<void (*)(Napi::CallbackInfo const&), void>::Wrapper(napi_env__*, napi_callback_info__*)::'lambda'()>((null)=0x000000002a5430c0, callback=(unnamed struct) @ 0x00007ffecf9958f0) at napi-inl.h:107:18
+    frame #10: 0x00007a2f1684e618 node-addon-api.node`Napi::details::CallbackData<void (*)(Napi::CallbackInfo const&), void>::Wrapper(env=0x000000002a5430c0, info=0x00007ffecf995940) at napi-inl.h:179:33
+    frame #11: 0x0000000001030181 node`v8impl::(anonymous namespace)::FunctionCallbackWrapper::Invoke(v8::FunctionCallbackInfo<v8::Value> const&) + 97
+    frame #12: 0x00007a2ef758f08d
+    frame #13: 0x00007a2ef758d654
+    frame #14: 0x00007a2ef758d654
+    frame #15: 0x00007a2ef758d654
+    frame #16: 0x00007a2ef758b21c
+    frame #17: 0x00007a2ef758af67
+    frame #18: 0x0000000001531b61 node`v8::internal::(anonymous namespace)::Invoke(v8::internal::Isolate*, v8::internal::(anonymous namespace)::InvokeParams const&) + 353
+    frame #19: 0x0000000001532a0f node`v8::internal::Execution::Call(v8::internal::Isolate*, v8::internal::DirectHandle<v8::internal::Object>, v8::internal::DirectHandle<v8::internal::Object>, v8::base::Vector<v8::internal::DirectHandle<v8::internal::Object> const>) + 95
+    frame #20: 0x000000000139f807 node`v8::Function::Call(v8::Isolate*, v8::Local<v8::Context>, v8::Local<v8::Value>, int, v8::Local<v8::Value>*) + 375
+    frame #21: 0x000000000101a0b2 node`node::Environment::RunTimers(uv_timer_s*) + 434
+    frame #22: 0x000000000210a534 node`uv__run_timers(loop=<unavailable>) at timer.c:193:5
+    frame #23: 0x000000000210e35a node`uv_run(loop=0x0000000006e5ea60, mode=UV_RUN_DEFAULT) at core.c:478:5
+    frame #24: 0x0000000000f8c055 node`node::SpinEventLoopInternal(node::Environment*) + 357
+    frame #25: 0x0000000001119642 node`node::NodeMainInstance::Run() + 226
+    frame #26: 0x0000000001058782 node`node::Start(int, char**) + 1202
+    frame #27: 0x00007a2f16229d90 libc.so.6`__libc_start_call_main(main=(node`main), argc=2, argv=0x00007ffecf996428) at libc_start_call_main.h:58:16
+    frame #28: 0x00007a2f16229e40 libc.so.6`__libc_start_main_impl(main=(node`main), argc=2, argv=0x00007ffecf996428, init=<unavailable>, fini=<unavailable>, rtld_fini=<unavailable>, stack_end=0x00007ffecf996418) at libc-start.c:392:3
+    frame #29: 0x0000000000f8761e node`_start + 46
+(lldb) quit
+```

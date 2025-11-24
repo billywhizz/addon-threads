@@ -1,3 +1,4 @@
+#include <chrono>
 #include <napi.h>
 #include <node_api.h>
 #include <thread>
@@ -5,11 +6,17 @@
 struct workerThread {
   std::thread thread;
   bool running = true;
+
+  ~workerThread () {
+    if (thread.joinable()) {
+      thread.join();
+    }
+  }
 };
 
 Napi::ThreadSafeFunction g_threadSafeFunction;
-std::vector<workerThread*> workers;
-int32_t id = 0;
+std::vector<std::unique_ptr<workerThread>> workers;
+std::int32_t id = 0;
 
 struct LogRecord {
   std::int32_t pid;
@@ -18,56 +25,57 @@ struct LogRecord {
 };
 
 void callback_from_thread () {
+/*
   napi_status acq = g_threadSafeFunction.Acquire();
   if (acq != napi_ok) {
     fprintf(stderr, "uhoh 1\n");
     return;
   };
+*/
   auto const record = new LogRecord();
   record->message = "hello";
   record->pid = getpid();
   record->tid = pthread_self();
-  napi_status stat = g_threadSafeFunction.BlockingCall(record, [](Napi::Env env, Napi::Function jsCallback, LogRecord* payload) {
+  auto const status = g_threadSafeFunction.BlockingCall(record, [](Napi::Env env, Napi::Function jsCallback, LogRecord* record) {
     auto obj = Napi::Object::New(env);
-    obj["message"] = payload->message;
-    obj["pid"] = payload->pid;
-    obj["tid"] = payload->tid;
+    obj["message"] = record->message;
+    obj["pid"] = record->pid;
+    obj["tid"] = record->tid;
     obj["id"] = id++;
     jsCallback.Call({obj});
-    delete payload;
+    delete record;
   });
-  if (stat != napi_ok) {
+  if (status == napi_closing) {
+    return;
+  }
+  if (status != napi_ok) {
     fprintf(stderr, "uhoh 2\n");
     return;
   };
 }
 
 void Start(const Napi::CallbackInfo& info) {
-  Napi::Env env = info.Env();
-  Napi::Function cb = info[0].As<Napi::Function>();
+  auto const env = info.Env();
+  auto const cb = info[0].As<Napi::Function>();
   g_threadSafeFunction = Napi::ThreadSafeFunction::New(env, cb, "Foo", 0, 1);
   g_threadSafeFunction.Unref(env);
-  for (int i = 0; i < 5; i++) {
-    struct workerThread* worker = new workerThread();
-    worker->thread = std::thread([worker]() {
-      while(1) {
+  for (int i = 0; i < 1; i++) {
+    auto worker = std::make_unique<workerThread>();
+    worker->thread = std::thread([w = worker.get()]() {
+      while(w->running) {
         callback_from_thread();
-        if (!worker->running) break;
-        usleep(20);
+        std::this_thread::sleep_for(std::chrono::microseconds(20));
       }
     });
-    workers.push_back(worker);
+    workers.push_back(std::move(worker));
   }
 }
 
 void Stop(const Napi::CallbackInfo& info) {
-  std::for_each(workers.begin(), workers.end(), [](struct workerThread* worker) {
-    worker->running = false;
-  });
-  std::for_each(workers.begin(), workers.end(), [](struct workerThread* worker) {
-    worker->thread.join();
-    delete worker;
-  });
+  for (auto it = workers.begin(); it != workers.end(); ++it) {
+    (*it)->running = false;
+  }
+  workers.clear();
   g_threadSafeFunction.Abort();
   g_threadSafeFunction = Napi::ThreadSafeFunction();
 }
