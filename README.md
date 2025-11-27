@@ -30,3 +30,7 @@ perf script | inferno-collapse-perf > stacks.folded
 cat stacks.folded | inferno-flamegraph > node.svg
 google-chrome-stable node.svg
 ```
+
+```shell
+strace -e eventfd2,write node test.js
+```
