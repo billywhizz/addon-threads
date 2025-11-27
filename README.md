@@ -15,3 +15,18 @@
 - https://docs.libuv.org/en/v1.x/async.html
 - https://nikhilm.github.io/uvbook/threads.html
 - https://github.com/libuv/libuv/blob/f6e19be74388ff9dfa8583da226d605a7eb4e022/src/unix/async.c#L168
+
+## perf
+
+- https://github.com/jonhoo/inferno
+
+```shell
+sudo apt install -y linux-tools-$(uname -r)
+cargo install addr2line --features="bin"
+sudo sh -c 'echo 1 >/proc/sys/kernel/perf_event_paranoid'
+sudo sh -c 'echo 0 >/proc/sys/kernel/kptr_restrict'
+perf record --call-graph dwarf node test.js
+perf script | inferno-collapse-perf > stacks.folded
+cat stacks.folded | inferno-flamegraph > node.svg
+google-chrome-stable node.svg
+```
