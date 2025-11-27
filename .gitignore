@@ -6,4 +6,3 @@ core.*
 dumps
 *.data
 *.folded
-*.svg
